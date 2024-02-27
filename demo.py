@@ -108,17 +108,14 @@ async def demo_move():
     await Set(PATH_STEERING_ANGLE, 0, DataType.FLOAT)
 
     # 4th straight
-    await asyncio.sleep(0.7 / FACTOR)
-
-    # Stop
-    await Set(PATH_VEHICLE_SPEED, 0, DataType.FLOAT)
-    await asyncio.sleep(1)
-    await Set(PATH_VEHICLE_SPEED, SPEED, DataType.FLOAT)
+    await asyncio.sleep(0.9 / FACTOR)
 
     # Left turn
-    await Set(PATH_STEERING_ANGLE, LEFT_TURN_VALUE * 2, DataType.FLOAT)
+    await Set(PATH_STEERING_ANGLE, LEFT_TURN_VALUE * 1.9, DataType.FLOAT)
     await asyncio.sleep(LEFT_TURN_DUR / 1.8)
     await Set(PATH_STEERING_ANGLE, 0, DataType.FLOAT)
+
+    await asyncio.sleep(0.2 / FACTOR)
 
     # Stop
     await Set(PATH_VEHICLE_SPEED, 0, DataType.FLOAT)
