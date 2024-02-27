@@ -25,7 +25,7 @@ SOFTWARE.
 from pydantic import Field
 import asyncio
 from kuksa_client.grpc.aio import VSSClient
-from kuksa_client.grpc import Datapoint
+from kuksa_client.grpc import Any, Datapoint
 from kuksa_client.grpc import DataEntry
 from kuksa_client.grpc import DataType
 from kuksa_client.grpc import EntryUpdate
@@ -39,18 +39,37 @@ from colorama import Fore
 import calendar
 import time
 from datetime import datetime
+from web3.middleware import geth_poa_middleware
 
-from web3 import Web3, AsyncWeb3
+from web3 import Web3, AsyncWeb3,EthereumTesterProvider
+import json
+
 
 init(autoreset=True)
 
 DATABROKER_ADDRESS = "40.114.167.144"
 DATABROKER_PORT = 55555
 PAYMENT_PATH = "Vehicle.VehicleIdentification.VehicleSpecialUsage"   # VSS Path co-opted for payment
-BLOCKCHAIN_ADDRESS = "ws://158.177.1.17:8546"
+#BLOCKCHAIN_ADDRESS = "ws://158.177.1.17:8546"
+#CONTRACT_ADDRESS = "0x9B8397f1B0FEcD3a1a40CdD5E8221Fa461898517"
+BLOCKCHAIN_ADDRESS = "wss://ethereum-sepolia-rpc.publicnode.com"
+CONTRACT_ADDRESS = "0x06825EB4c30081568A16249F57E60319F0E99a86"
+TOKEN_ID = 1;
 
 
 vssClient = VSSClient(DATABROKER_ADDRESS, DATABROKER_PORT) 
+w3 = Web3(Web3.WebsocketProvider(BLOCKCHAIN_ADDRESS))
+w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+
+
+test_private_key_1 = "3497ac60bf7691caa9e8faeca06422521f4272f82bcfe4f5673900524e660592"#"0x8f2a55949038a9610f50fb23b5883af3b4ecb3c3bb792cbcefbd1542c692be63";
+test_private_key_2 = "40160557dc9d2674e2d7f32f7e3c869af9cdd779f052d733227233a3e2cd4745"#"0xc87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3";
+test_private_key_3 = "0xae6ae8e5ccbfb04590405997ee2d52d2b330726137b875053c36d94e974d162f";
+
+
+account_car = w3.eth.account.from_key(test_private_key_1)
+account_station = w3.eth.account.from_key(test_private_key_2)
+account_3 = w3.eth.account.from_key(test_private_key_3)
 
 """
 What code does:
@@ -69,7 +88,7 @@ for example:
 
 Outbound <<<|TS|transactionid|message
 example: <<<|2024-02-21-09:23:45|TX123456|Transaction Complete. Payment has been made
-"""
+"""#
 
 def logError(msg):
     log(f"{Fore.RED} {msg}")
@@ -80,18 +99,43 @@ def log(msg):
     dt = datetime.fromtimestamp(ts)
     print(f"{Fore.GREEN} {dt} {msg}")
 
+
+def do_the_payment(price):
+    f = open("Token.json", "r")
+    token = json.load(f)
+
+    init_bytecode = token['bytecode']
+    init_abi = token['abi']
+    nonce = w3.eth.get_transaction_count(account_car.address)
+    contract = w3.eth.contract(address=CONTRACT_ADDRESS,abi=init_abi)
+    chain_id = w3.eth.chain_id
+    transfer_tx = contract.functions.safeTransferFrom(account_car.address,account_station.address,TOKEN_ID,price,bytes('0x0','utf-8')).build_transaction(
+    {
+        'from': account_car.address,
+        'nonce': nonce,
+        'gas': 1000000,
+    })
+    
+    signed_txn = w3.eth.account.sign_transaction(transfer_tx,private_key=account_car.key)
+    tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+    tx_hash = w3.to_hex(tx_hash)
+    print(f"Transction hash is {tx_hash}") 
+
+
+
 async def subscribe():
     """ Subscribe to values used by app and sync changes """
     print(f"   {Fore.YELLOW}>>> {Fore.RED}Subscribing required values..{Fore.YELLOW}<<<")
-    print("")
 
+    do_the_payment(100)
+    
     async with vssClient:
         entries = []
         entries.append (SubscribeEntry(PAYMENT_PATH, View.FIELDS, (VssField.VALUE, VssField.ACTUATOR_TARGET)))
  
         async for updates in vssClient.subscribe(entries=entries): 
             for update in updates:
-                print("Incoming message: " + update.entry.value.value.values[0])
+                # print("Incoming message: " + update.entry.value.value.values[0])
                 if update.entry.value is not None:
                     frags = parseInbound(update.entry.value.value.values[0])
                     
@@ -104,6 +148,8 @@ async def subscribe():
                     goods = frags[3]
                     paymentAmount = frags[4]
                     await handlePayment(ts, identity, goods, paymentAmount)
+
+
  
 def parseInbound(val):
     frags = val.split("|")
@@ -125,13 +171,14 @@ def parseInbound(val):
     return frags
 
 async def handlePayment(ts, identity, goods, paymentAmount):
+
     print(f"handlePayment {ts} {identity} {goods} {paymentAmount}")
     """ Handle SmartContract Payments and then write to databroker the results """
     
-    w3 = Web3(Web3.WebsocketProvider(BLOCKCHAIN_ADDRESS))
     print(f"Connected to blockchain: {w3.is_connected()}")
 
-    returnValue = f"<<<|<TimeStamp>|<ReturnMessage>"                    
+    returnValue = f"<<<|payment|True|x893794872u234234sdfsd|30|Eth|Payment Complete"                    
+
     try:
         async with vssClient:
             entry = EntryUpdate(DataEntry(PAYMENT_PATH, value=Datapoint(value=returnValue), metadata=Metadata(data_type=DataType.STRING_ARRAY)), (VssField.VALUE,))
