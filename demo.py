@@ -70,24 +70,59 @@ async def main():
         time.sleep(1)
 
 
-SPEED = 8
-LEFT_TURN_VALUE = 6
+FACTOR = 1
+SPEED = 8 * FACTOR
+LEFT_TURN_VALUE = 10
 RIGHT_TURN_VALUE = -LEFT_TURN_VALUE
+
+LEFT_TURN_DUR = 1.775
 
 
 async def demo_move():
     await Set(PATH_ENGINE_RUNNING, True, DataType.BOOLEAN)
     await Set(PATH_PARKING_BRAKE_ENGAGED, False, DataType.BOOLEAN)
-    await Set(PATH_VEHICLE_SPEED, 8, DataType.FLOAT)
+    await Set(PATH_VEHICLE_SPEED, SPEED, DataType.FLOAT)
 
-    # Sleep for 6 seconds
-    await asyncio.sleep(6)
+    # First straight
+    await asyncio.sleep(6.8 / FACTOR)
 
+    # Left turn
     await Set(PATH_STEERING_ANGLE, LEFT_TURN_VALUE, DataType.FLOAT)
-
-    await asyncio.sleep(4)
-
+    await asyncio.sleep(LEFT_TURN_DUR)
     await Set(PATH_STEERING_ANGLE, 0, DataType.FLOAT)
+
+    # 2nd straight
+    await asyncio.sleep(9.7 / FACTOR)
+
+    # Left turn
+    await Set(PATH_STEERING_ANGLE, LEFT_TURN_VALUE, DataType.FLOAT)
+    await asyncio.sleep(LEFT_TURN_DUR)
+    await Set(PATH_STEERING_ANGLE, 0, DataType.FLOAT)
+
+    # 3rd straight
+    await asyncio.sleep(1.3 / FACTOR)
+
+    # Left turn
+    await Set(PATH_STEERING_ANGLE, LEFT_TURN_VALUE, DataType.FLOAT)
+    await asyncio.sleep(LEFT_TURN_DUR)
+    await Set(PATH_STEERING_ANGLE, 0, DataType.FLOAT)
+
+    # 4th straight
+    await asyncio.sleep(0.7 / FACTOR)
+
+    # Stop
+    await Set(PATH_VEHICLE_SPEED, 0, DataType.FLOAT)
+    await asyncio.sleep(1)
+    await Set(PATH_VEHICLE_SPEED, SPEED, DataType.FLOAT)
+
+    # Left turn
+    await Set(PATH_STEERING_ANGLE, LEFT_TURN_VALUE * 2, DataType.FLOAT)
+    await asyncio.sleep(LEFT_TURN_DUR / 1.8)
+    await Set(PATH_STEERING_ANGLE, 0, DataType.FLOAT)
+
+    # Stop
+    await Set(PATH_VEHICLE_SPEED, 0, DataType.FLOAT)
+    await asyncio.sleep(1)
 
 
 async def notify_ui(req_type, text1=None, text2=None):
