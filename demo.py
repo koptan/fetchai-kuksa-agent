@@ -108,11 +108,11 @@ async def demo_move():
     await Set(PATH_STEERING_ANGLE, 0, DataType.FLOAT)
 
     # 4th straight
-    await asyncio.sleep(0.9 / FACTOR)
+    await asyncio.sleep(0.85 / FACTOR)
 
     # Left turn
     await Set(PATH_STEERING_ANGLE, LEFT_TURN_VALUE * 1.9, DataType.FLOAT)
-    await asyncio.sleep(LEFT_TURN_DUR / 1.8)
+    await asyncio.sleep(LEFT_TURN_DUR / 1.9)
     await Set(PATH_STEERING_ANGLE, 0, DataType.FLOAT)
 
     await asyncio.sleep(0.2 / FACTOR)
@@ -122,25 +122,8 @@ async def demo_move():
     await asyncio.sleep(1)
 
 
-async def notify_ui(req_type, text1=None, text2=None):
-    try:
-        # Append text1 and text2 using pipe delimiter if not none
-        payload = f"@UIRequest|{req_type}"
-        if text1 is not None:
-            payload += f"|{text1}"
-        if text2 is not None:
-            payload += f"|{text2}"
-
-        async with vssClient:
-            entry = EntryUpdate(DataEntry(NOTIFICATION_PATH, value=Datapoint(value=payload),
-                                          metadata=Metadata(data_type=DataType.STRING)), (VssField.VALUE,))
-            await vssClient.set(updates=(entry,))
-
-            # Wait for response
-            # response = await vssClient.get(requests=(EntryRequest(NOTIFICATION_PATH, (VssField.VALUE), 1)))
-    except Exception as err:
-        print(
-            f"ERROR: Sending data to Kuksa Databroker {err}. Connection Details: {DATABROKER_ADDRESS} port {DATABROKER_PORT}")
+async def notify_ui(header, text):
+    await Set(NOTIFICATION_PATH, f"<<<|notification|{header}|{text}", DataType.STRING)
 
 
 if __name__ == "__main__":
