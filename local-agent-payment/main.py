@@ -46,6 +46,9 @@ from agent_ai import stage_1, EMAIL, BEARER_TOKEN, REQUESTED_MODEL
 from web3 import Web3, AsyncWeb3, EthereumTesterProvider
 import json
 
+from speech_text_convert import output_voice
+from speech_text_convert import convert_text_to_speech
+
 init(autoreset=True)
 
 DATABROKER_ADDRESS = "localhost"
@@ -265,9 +268,12 @@ async def main():
     # await Set(PATH_VEHICLE_SPEED, 10, DataType.FLOAT)
     # await asyncio.gather(subscribe(), demo_move())
     await demo_move()
-    # await show_notification("Payment", "12345")
-    # await asyncio.sleep(3)
-    # await hide_notification()
+    arrival_message = "You have arrived at the charging station, Sir. I will now make a payment to the charging station and start charging your vehicle."
+    await show_notification(arrival_message)
+    audio_file = convert_text_to_speech(text_to_speech_client, arrival_message)
+    output_voice(audio_file)
+    await asyncio.sleep(5)
+    await hide_notification()
 
 
 if __name__ == "__main__":

@@ -18,7 +18,7 @@ from sdvlink_companion import show_notification, hide_notification
 
 EMAIL = "devstar2156@gcplab.me"
 REQUESTED_MODEL = "talkative-01"
-BEARER_TOKEN = "eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE3MDkwNzQxMjcsImlhdCI6MTcwOTA3MDUyNywiaXNzIjoiZmV0Y2guYWkiLCJqdGkiOiJhMjU5OGQ0M2M1OGM1ZTZhNWIwZGRjMzkiLCJzY29wZSI6IiIsInN1YiI6IjgxNmQzNTk3NTI5MDNiMmI4YTA0NGQwYzc5NDQxYjBkNDI1NzBhMDk1Y2U1MjM4ZCJ9.jVh99FrCnRm1GF5zgmuy4GTL4sey9smPAi4aKw3dRGdaTbG7A2TzZ5ddSPBDAOzhODVXTEb9ghh4cgz6xNnungbBwiMNyTgvdZHUfXgxTStWaR0mVQf7f1NR8KwnzavNVADGQ93FbwUJiRDXP-N43CgOU1Oh5YePKR-IZqTvCXAg3eXnYiKHKU_juJM29LadBTPb9Fx8bEewlyoUcdWq1XSb41JLcsYW-lMTVDy3d5HLOonOFKxNNiebLov_wD5R9U_I4wd-yjLHJRRH1EMsyGtukkpY9Nai4RbKO4qHXgjgzVkOj0AifFq2pOVUXwwClHMNnf_O6KFGfzJlp_wD7Q"
+BEARER_TOKEN = "eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE3MDkxMTg1MTQsImlhdCI6MTcwOTExNDkxNCwiaXNzIjoiZmV0Y2guYWkiLCJqdGkiOiIxYWNiZDY3NzNlMTg1ZDRjOWM2MjdiNTIiLCJzY29wZSI6IiIsInN1YiI6IjgxNmQzNTk3NTI5MDNiMmI4YTA0NGQwYzc5NDQxYjBkNDI1NzBhMDk1Y2U1MjM4ZCJ9.VnwgpTiE-3X0oJwf-ix1yNj_cWncJvI2qhh93NzchIK9rhj3whf9fI1HIUifwMAoj8o7xR70zyrgtkYPKIQzHuOdBe_s7FbGWGGLSb696z2PPtB53YicdRPPTmkPVmD_7EttmO1W57GdvE9F1HIAumI4OnIxMEuZONOQD61C9KbO7jyC4XfFKpy0uyaZnJ1urxYNlGlzvT58iEODnpjjmRI9vyirHC-dAHadSsxq05Hd8dQgFDHeO5pIdhUOYB33JjjolTvVgED21IL7r7xIXtPyUKc6cc-OpMWrULZptasLjNro9NogwbSd5kXfLIF0F4CyRqOU2Gspv1FtLJ-kBw"
 
 
 def start_session(bearer_token, email, requestedModel):
@@ -82,10 +82,12 @@ def fetch_new_messages(bearer_token, session_id, client):
     print(f"Fetching new messages for session {session_id}...")
     flag = False
     while not flag:
-        # if time.time() - start_time > 15:
-        #     in_between_message = "I am still searching for charging stations on your route."
-        #     audio_file = convert_text_to_speech(client, in_between_message)
-        #     output_voice(audio_file)
+        current_time = time.time()
+        elapsed_time = current_time - start_time
+        if elapsed_time // 8 > (elapsed_time - 0.1) // 8:
+            in_between_message = "I am still searching for charging stations on your route."
+            audio_file = convert_text_to_speech(client, in_between_message)
+            output_voice(audio_file)
 
         try:
             start_fetch_time = time.time()
@@ -99,12 +101,7 @@ def fetch_new_messages(bearer_token, session_id, client):
                 })
 
             response_data = json.loads(response.text)
-            print("\nResponse raw: ")
-            print(response_data)
             response_list = response_data["agent_response"]
-            print("\nResponse list: ")
-            print(response_list)
-            print()
             for item in response_list:
                 item_dict = json.loads(item)
                 if item_dict.get("type") == "agent_json":
@@ -188,7 +185,7 @@ async def act_on_user_answer(find_charging_station, num_tries, bearer_token, ema
     else:
         if num_tries < 2:
             num_tries += 1
-            invalid_message = "Sorry, I did not understand your answer. Please try again."
+            invalid_message = "Sorry, I did not understand your answer. Do you want me to find a charging station on your route?"
             await notify_ui(invalid_message)
             audio_file = convert_text_to_speech(text_to_speech_client, invalid_message)
             output_voice(audio_file)
@@ -225,8 +222,8 @@ async def stage_1(text_to_speech_client, speech_to_text_client):
 
     print("Starting session...")
 
-    print("Your battery is below 20%. Do you want me to find a charging station on your route?")
-    starting_output = "Your battery is below 20%. Do you want me to find a charging station on your route?"
+    print("Sir, your battery is below 20%. Do you want me to find a charging station on your route?")
+    starting_output = "Sir, your battery is below 20%. Do you want me to find a charging station on your route?"
     await notify_ui(starting_output)
     audio_file = convert_text_to_speech(text_to_speech_client, starting_output)
     output_voice(audio_file)
@@ -239,7 +236,15 @@ async def stage_1(text_to_speech_client, speech_to_text_client):
 
     await act_on_user_answer(find_charging_station, num_tries, bearer_token, email, requestedModel,
                              text_to_speech_client, speech_to_text_client)
-
+    
+    speech_file = record_audio()
+    user_answer = convert_speech_to_text(speech_file, speech_to_text_client)
+    find_charging_station = interprete_user_answer(user_answer)
+    confirm_message = "Ok Sir, I reserved a spot for you and started the navigation to the charging station."
+    await notify_ui(confirm_message)
+    audio_file = convert_text_to_speech(text_to_speech_client, confirm_message)
+    output_voice(audio_file)
+    await hide_ui()
 
 if __name__ == "__main__":
     text_to_speech_client = texttospeech.TextToSpeechClient()

@@ -17,6 +17,7 @@ AGENT_RESPONSE:
 OUTPUT_FORMAT:
 * Write the summary in the style as if you were the assistant agent responding to the user input.
 * List all options that you found with its respective values in a numbered list so the user can select the desired option.
+* Ask the user in the end if you should reserve a spot at the first option.
 * It should be polite and also feel like a natural dialogue response.
 * Only output the summary and do not include other content in your response.
 
