@@ -403,6 +403,17 @@ async def handleHorn():
     pass
 
 
+PATH_NOTIFICATION = "Vehicle.VehicleIdentification.VehicleSpecialUsage"
+
+
+async def show_notification(header, text):
+    await Set(PATH_NOTIFICATION, f"<<<|notification|{header}|{text}", DataType.STRING)
+
+
+async def hide_notification():
+    await Set(PATH_NOTIFICATION, "<<<|hide", DataType.STRING)
+
+
 if __name__ == "__main__":
     # Keyboard Bindings
     keyboard.add_hotkey('Q', lambda: asyncio.run(handleEnginePower()))  # Turn off and On Engine
