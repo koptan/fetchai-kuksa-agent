@@ -151,7 +151,7 @@ RIGHT_TURN_VALUE = -LEFT_TURN_VALUE
 LEFT_TURN_DUR = 1.775
 
 
-async def demo_move():
+async def run_vr_simulation():
     await Set(PATH_ENGINE_RUNNING, True, DataType.BOOLEAN)
     await Set(PATH_PARKING_BRAKE_ENGAGED, False, DataType.BOOLEAN)
     await Set(PATH_VEHICLE_SPEED, SPEED, DataType.FLOAT)
@@ -260,12 +260,12 @@ async def handlePayment(ts, identity, goods, paymentAmount):
             f"ERROR: Sending data to Kuksa Databroker {err}. Connection Details: {DATABROKER_ADDRESS} port {DATABROKER_PORT}")
 
 
-async def demo_main():
+async def run_simulation():
     text_to_speech_client = texttospeech.TextToSpeechClient()
     speech_to_text_client = speech.SpeechClient()
     await stage_1(text_to_speech_client, speech_to_text_client)
 
-    await demo_move()
+    await run_vr_simulation()
 
     arrival_message = "You have arrived at the charging station, estimated charging time is 25 minutes."
     await show_notification("Notification", arrival_message)
@@ -292,7 +292,7 @@ async def demo_main():
 
 
 async def main():
-    await demo_main()
+    await run_simulation()
 
 
 if __name__ == "__main__":
