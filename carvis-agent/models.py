@@ -36,7 +36,6 @@ OUTPUT_FORMAT:
 * If the user's answer is a confirmation, respond with "yes".
 * If the user's answer is a decline, respond with "no".
 * Only output the slected word and do not include any other content in your response.
-
 """
 
 

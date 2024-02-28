@@ -16,7 +16,7 @@ from speech_text_convert import output_voice
 
 EMAIL = "devstar2156@gcplab.me"
 REQUESTED_MODEL = "talkative-01"
-BEARER_TOKEN = "eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE3MDkwNzQxMjcsImlhdCI6MTcwOTA3MDUyNywiaXNzIjoiZmV0Y2guYWkiLCJqdGkiOiJhMjU5OGQ0M2M1OGM1ZTZhNWIwZGRjMzkiLCJzY29wZSI6IiIsInN1YiI6IjgxNmQzNTk3NTI5MDNiMmI4YTA0NGQwYzc5NDQxYjBkNDI1NzBhMDk1Y2U1MjM4ZCJ9.jVh99FrCnRm1GF5zgmuy4GTL4sey9smPAi4aKw3dRGdaTbG7A2TzZ5ddSPBDAOzhODVXTEb9ghh4cgz6xNnungbBwiMNyTgvdZHUfXgxTStWaR0mVQf7f1NR8KwnzavNVADGQ93FbwUJiRDXP-N43CgOU1Oh5YePKR-IZqTvCXAg3eXnYiKHKU_juJM29LadBTPb9Fx8bEewlyoUcdWq1XSb41JLcsYW-lMTVDy3d5HLOonOFKxNNiebLov_wD5R9U_I4wd-yjLHJRRH1EMsyGtukkpY9Nai4RbKO4qHXgjgzVkOj0AifFq2pOVUXwwClHMNnf_O6KFGfzJlp_wD7Q"
+BEARER_TOKEN = "eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE3MDkxMDgyMjgsImlhdCI6MTcwOTEwNDYyOCwiaXNzIjoiZmV0Y2guYWkiLCJqdGkiOiJmNDk2NWQ5ZjcxZDUxZjg0Mzc3M2I0ZjkiLCJzY29wZSI6IiIsInN1YiI6IjgxNmQzNTk3NTI5MDNiMmI4YTA0NGQwYzc5NDQxYjBkNDI1NzBhMDk1Y2U1MjM4ZCJ9.FKXvLPO-ndhiLhrJ-O2esFdBaxpowv4BElN4fsVbKzhybY5yvuis31BgWztSwV-oMlyN2lC0rzeqYKRXoXzI1b25psFZ6iuPpYEpoKn-gHhhL5oBPGKGmJ9i406La0xyXlI2SPO5oXnKLk3cmug_b5j9XZcm9Fcm9YfXqtglu14oEBMuDdbPO94gyDrinhwghvm_34dxFH7un93SynUCwpffW0atVkKGjGYNkw6AVzTeNI1xKQ_0po3bkblWK6jVBedj529oOx9bI3lKDSAKe2zHR2cYK1phi2qm_m7Kpx_cxlsFqPnJUn51I012rdwZYIwmk6yXn0A878x420_u2w"
 
 
 def start_session(bearer_token, email, requestedModel):
@@ -93,12 +93,7 @@ def fetch_new_messages(bearer_token, session_id, client):
             })
 
             response_data = json.loads(response.text)
-            print("\nResponse raw: ")
-            print(response_data)
             response_list = response_data["agent_response"]
-            print("\nResponse list: ")
-            print(response_list)
-            print()
             for item in response_list:
                 item_dict = json.loads(item)
                 if item_dict.get("type") == "agent_json":
@@ -191,8 +186,14 @@ def act_on_user_answer(find_charging_station, num_tries, bearer_token, email, re
             output_voice(audio_file)
             print(invalid_message)
 
+def voice_log(text, text_to_speech_client):
+    audio_file = convert_text_to_speech(text_to_speech_client, text)
+    output_voice(audio_file)
+
+
 def display_in_cockpit(text):
     pass
+
 
 
 def main():
