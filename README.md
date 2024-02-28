@@ -1,6 +1,10 @@
 # C.A.R.V.I.S
 ### Car A Rather Very Intelligent System
 
+## Demo video
+
+[Watch the video](https://github.com/Bosch-ConnectedExperience-2024/CARVIS/blob/main/Demo%20Video.mp4)
+
 
 ## To run the code:
 1. Clone the Python source code from this repo: https://github.com/zubairhamed/fetchai-kuksa-agent/tree/main/local-agent-payment
@@ -65,7 +69,7 @@ Authenticate with default account login https://cloud.google.com/sdk/gcloud/refe
     
     $ gcloud auth application-default login
 
-Run the agent_ai.py file:
+Run the main.py file:
 
-    $ python carvis-agent/agent_ai.py
+    $ python local-agent-payment/main.py
 
