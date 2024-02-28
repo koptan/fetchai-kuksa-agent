@@ -260,20 +260,39 @@ async def handlePayment(ts, identity, goods, paymentAmount):
             f"ERROR: Sending data to Kuksa Databroker {err}. Connection Details: {DATABROKER_ADDRESS} port {DATABROKER_PORT}")
 
 
-async def main():
+async def demo_main():
     text_to_speech_client = texttospeech.TextToSpeechClient()
     speech_to_text_client = speech.SpeechClient()
     await stage_1(text_to_speech_client, speech_to_text_client)
 
-    # await Set(PATH_VEHICLE_SPEED, 10, DataType.FLOAT)
-    # await asyncio.gather(subscribe(), demo_move())
     await demo_move()
-    arrival_message = "You have arrived at the charging station, Sir. I will now make a payment to the charging station and start charging your vehicle."
-    await show_notification(arrival_message)
+
+    arrival_message = "You have arrived at the charging station, estimated charging time is 25 minutes."
+    await show_notification("Notification", arrival_message)
     audio_file = convert_text_to_speech(text_to_speech_client, arrival_message)
     output_voice(audio_file)
-    await asyncio.sleep(5)
     await hide_notification()
+
+    await asyncio.sleep(10)
+
+    arrival_message = "Charging completed. Total cost: 15€.\nPayment will be processed...."
+    await show_notification("Notification", arrival_message)
+    audio_file = convert_text_to_speech(text_to_speech_client, arrival_message)
+    output_voice(audio_file)
+    await hide_notification()
+
+    do_the_payment(15)
+    await asyncio.sleep(2)
+
+    arrival_message = "Payment successful. You can continue your journey, Sir."
+    await show_notification("Notification", arrival_message)
+    audio_file = convert_text_to_speech(text_to_speech_client, arrival_message)
+    output_voice(audio_file)
+    await hide_notification()
+
+
+async def main():
+    await demo_main()
 
 
 if __name__ == "__main__":
