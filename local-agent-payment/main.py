@@ -21,7 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
-
+from google.cloud import texttospeech, speech
 from pydantic import Field
 import asyncio
 from kuksa_client.grpc.aio import VSSClient
@@ -40,14 +40,15 @@ import calendar
 import time
 from datetime import datetime
 from web3.middleware import geth_poa_middleware
-from sdvlink_companion import Set
+from sdvlink_companion import Set, show_notification, hide_notification
+from agent_ai import stage_1, EMAIL, BEARER_TOKEN, REQUESTED_MODEL
 
 from web3 import Web3, AsyncWeb3, EthereumTesterProvider
 import json
 
 init(autoreset=True)
 
-DATABROKER_ADDRESS = "40.114.167.144"
+DATABROKER_ADDRESS = "localhost"
 DATABROKER_PORT = 55555
 PAYMENT_PATH = "Vehicle.VehicleIdentification.VehicleSpecialUsage"  # VSS Path co-opted for payment
 # BLOCKCHAIN_ADDRESS = "ws://158.177.1.17:8546"
@@ -191,14 +192,6 @@ async def demo_move():
     await asyncio.sleep(1)
 
 
-async def show_notification(header, text):
-    await Set(PATH_NOTIFICATION, f"<<<|notification|{header}|{text}", DataType.STRING)
-
-
-async def hide_notification():
-    await Set(PATH_NOTIFICATION, "<<<|hide", DataType.STRING)
-
-
 async def subscribe():
     """ Subscribe to values used by app and sync changes """
     print(f"   {Fore.YELLOW}>>> {Fore.RED}Subscribing required values..{Fore.YELLOW}<<<")
@@ -265,7 +258,16 @@ async def handlePayment(ts, identity, goods, paymentAmount):
 
 
 async def main():
-    await asyncio.gather(subscribe(), demo_move())
+    text_to_speech_client = texttospeech.TextToSpeechClient()
+    speech_to_text_client = speech.SpeechClient()
+    await stage_1(text_to_speech_client, speech_to_text_client)
+
+    # await Set(PATH_VEHICLE_SPEED, 10, DataType.FLOAT)
+    # await asyncio.gather(subscribe(), demo_move())
+    await demo_move()
+    # await show_notification("Payment", "12345")
+    # await asyncio.sleep(3)
+    # await hide_notification()
 
 
 if __name__ == "__main__":
