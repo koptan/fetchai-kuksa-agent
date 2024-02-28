@@ -3,7 +3,7 @@
 
 ## Demo video
 
-[Watch the video](https://github.com/Bosch-ConnectedExperience-2024/CARVIS/blob/main/Demo%20Video.mp4)
+[Watch the video](https://drive.google.com/file/d/13jBPw16hfY8qG7sALY38BSJMpec2csxN/view)
 
 
 ## To run the code:
