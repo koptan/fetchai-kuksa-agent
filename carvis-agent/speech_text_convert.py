@@ -82,12 +82,11 @@ def output_voice(audio_file):
     while pygame.mixer.music.get_busy():
         pygame.time.Clock().tick(10)
 
+    # Stop the music after it's done playing
+    pygame.mixer.music.stop()
 
-
-
-
-
-
+    # Unload the music file to release the file resource
+    pygame.mixer.music.unload()
 
 
 # def upload_blob(bucket_name, source_file_name, destination_blob_name):
